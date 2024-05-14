@@ -1,6 +1,11 @@
 import React, { useState, useRef } from "react";
 import Header from "./Header";
 import { validate } from "../utils/validate";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "../utils/firebase";
 
 const Login = () => {
   const [isSignInForm, setIsSignIsForm] = useState(true);
@@ -16,14 +21,48 @@ const Login = () => {
   const [errorMessage, setErrorMeggage] = useState(null);
 
   const handleButtonClick = () => {
-    console.log(email.current.value);
-    console.log(password.current.value);
-    const message = validate(
-      email.current.value,
-      password.current.value,
-    );
-    console.log(message);
+    const message = validate(email.current.value, password.current.value);
     setErrorMeggage(message);
+    if (message) return;
+    //neeche iske jaa rahe ho means message null hai i.e no error i.e ab api call karna hai for sign in or sign out
+    else {
+      if (!isSignInForm) {
+        //Sign Up Logic and api below :--
+        createUserWithEmailAndPassword(
+          auth,
+          email.current.value,
+          password.current.value
+        )
+          .then((userCredential) => {
+            // Signed up
+            const user = userCredential.user;
+            console.log(user);
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode + "-" + errorMessage);
+          });
+      } else {
+        //Sign In logic and api :--
+
+        signInWithEmailAndPassword(
+          auth,
+          email.current.value,
+          password.current.value
+        )
+          .then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            console.log(user);
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode + "-" + errorMessage);
+          });
+      }
+    }
   };
 
   return (
